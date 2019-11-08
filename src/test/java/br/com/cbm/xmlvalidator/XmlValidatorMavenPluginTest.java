@@ -7,17 +7,26 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.apache.maven.plugin.MojoExecutionException;
 import org.junit.Assert;
 import org.junit.Test;
 import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
 
+import br.com.cbm.xmlvalidator.model.Property;
+import br.com.cbm.xmlvalidator.model.Rule;
+import br.com.cbm.xmlvalidator.model.Tag;
+import br.com.cbm.xmlvalidator.model.ValidationJson;
+
 
 public class XmlValidatorMavenPluginTest {
 
-    XmlValidatorMavenPlugin xmlValidatorMavenPlugin = new XmlValidatorMavenPlugin();
+    private XmlValidatorMavenPlugin xmlValidatorMavenPlugin = new XmlValidatorMavenPlugin();
 
     @Test
     public void teste() {
@@ -39,23 +48,27 @@ public class XmlValidatorMavenPluginTest {
         } catch (ParserConfigurationException | IOException | SAXException e) {
             e.printStackTrace();
         }
-        int length = doc.getElementsByTagName("createTable").item(0).getAttributes().item(0).getNodeValue().length();
 
         File basicRules = new File("./src/main/resources/basic-rules");
         Set<File> allJsonFiles = this.xmlValidatorMavenPlugin.findAllFiles(basicRules, ".json");
-        Set<Object> json = new HashSet<>();
-        for (File jsonFile : allJsonFiles) {
-            try {
-                json.add(this.xmlValidatorMavenPlugin.parseValidationJson(jsonFile));
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
+        Set<ValidationJson> allValidationJsons = new HashSet<>();
+        try {
+            for (File jsonFile : allJsonFiles) {
+                allValidationJsons.add(this.xmlValidatorMavenPlugin.parseValidationJson(jsonFile));
             }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
         }
 
+        try {
+            for (ValidationJson validationJson : allValidationJsons) {
+                this.xmlValidatorMavenPlugin.validate(validationJson, doc);
+            }
+        } catch (MojoExecutionException e) {
+            e.printStackTrace();
+        }
 
         Assert.assertFalse(allXmlFiles.isEmpty());
     }
-
-
 }
 

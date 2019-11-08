@@ -1,11 +1,12 @@
 package br.com.cbm.xmlvalidator.model;
 
+import java.util.HashSet;
 import java.util.Set;
 
 public class Tag {
     private String name;
-    private Set<Property> properties;
-    private Set<Rule> rules;
+    private Set<Property> properties = new HashSet<>();
+    private Set<Rule> rules = new HashSet<>();
 
     public String getName() {
         return this.name;
