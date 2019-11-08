@@ -1,0 +1,74 @@
+{
+  "tags" : [
+    {
+      "name" : "createTable",
+      "properties" : [
+        {
+          "name" : "tableName",
+          "rules" : [
+            {
+              "CLASSNAME" : "br.com.cbm.xmlvalidator.model.MaxLengthRule",
+              "DATA" : {
+                "value" : 30
+              }
+            },
+            {
+              "CLASSNAME" : "br.com.cbm.xmlvalidator.model.GenericRule",
+              "DATA" : {
+                "value" : ""
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name" : "column",
+      "properties" : [
+        {
+          "name" : "genericProperties",
+          "rules" : [
+            {
+              "CLASSNAME" : "br.com.cbm.xmlvalidator.model.GenericRule",
+              "DATA" : {
+                "value" : ""
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name" : "constraints",
+      "properties" : [
+        {
+          "name": "nullable",
+          "rules" : [
+            {
+              "CLASSNAME" : "br.com.cbm.xmlvalidator.model.InRule",
+              "DATA" : {
+                "value" : [
+                  "false",
+                  "true"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "genericRules" : [
+    {
+      "CLASSNAME" : "br.com.cbm.xmlvalidator.model.MaxLengthRule",
+      "DATA" : {
+        "value" : 30
+      }
+    }
+  ],
+  "genericProperties" : [
+    {
+      "name" : "name"
+    }
+  ]
+}
