@@ -26,21 +26,27 @@ import br.com.cbm.xmlvalidator.model.ValidationJson;
 
 public class XmlValidatorMavenPluginTest {
 
+    private static final String EXAMPLE_XML_FILE_NAME = "example.xml";
+    private static final String BASIC_RULES_PATH = "./src/main/resources/basic-rules";
     private XmlValidatorMavenPlugin xmlValidatorMavenPlugin = new XmlValidatorMavenPlugin();
 
-    @Test
-    public void teste() {
+    //TODO more test cases
+    @Test(expected = MojoExecutionException.class)
+    public void basicTest() throws MojoExecutionException {
         this.xmlValidatorMavenPlugin.registerJsonsAndCreateGson();
 
         File file = new File("./");
-        Set<File> allXmlFiles = this.xmlValidatorMavenPlugin.findAllFiles(file, ".xml");
+        Set<File> allXmlFiles = this.xmlValidatorMavenPlugin.findAllFiles(file, XmlValidatorMavenPlugin.DOT_XML);
+        Assert.assertFalse(allXmlFiles.isEmpty());
 
         File xmlFile = null;
-        for (File allXmlFile : allXmlFiles) {
-            if (allXmlFile.getName().toLowerCase().equals("example.xml")) {
-                xmlFile = allXmlFile;
+        for (File currentFile : allXmlFiles) {
+            if (currentFile.getName().toLowerCase().equals(EXAMPLE_XML_FILE_NAME)) {
+                xmlFile = currentFile;
             }
         }
+        Assert.assertNotNull(xmlFile);
+        Assert.assertEquals(EXAMPLE_XML_FILE_NAME, xmlFile.getName());
 
         Document doc = null;
         try {
@@ -48,9 +54,10 @@ public class XmlValidatorMavenPluginTest {
         } catch (ParserConfigurationException | IOException | SAXException e) {
             e.printStackTrace();
         }
+        Assert.assertNotNull(doc);
 
-        File basicRules = new File("./src/main/resources/basic-rules");
-        Set<File> allJsonFiles = this.xmlValidatorMavenPlugin.findAllFiles(basicRules, ".json");
+        File basicRules = new File(BASIC_RULES_PATH);
+        Set<File> allJsonFiles = this.xmlValidatorMavenPlugin.findAllFiles(basicRules, XmlValidatorMavenPlugin.DOT_JSON);
         Set<ValidationJson> allValidationJsons = new HashSet<>();
         try {
             for (File jsonFile : allJsonFiles) {
@@ -59,16 +66,16 @@ public class XmlValidatorMavenPluginTest {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
+        Assert.assertFalse(allValidationJsons.isEmpty());
 
-        try {
-            for (ValidationJson validationJson : allValidationJsons) {
+        for (ValidationJson validationJson : allValidationJsons) {
+            try {
                 this.xmlValidatorMavenPlugin.validate(validationJson, doc);
+            } catch (XmlValidationException e) {
+                throw new MojoExecutionException(e.getMessage());
             }
-        } catch (MojoExecutionException e) {
-            e.printStackTrace();
         }
-
-        Assert.assertFalse(allXmlFiles.isEmpty());
+        Assert.fail();
     }
 }
 
