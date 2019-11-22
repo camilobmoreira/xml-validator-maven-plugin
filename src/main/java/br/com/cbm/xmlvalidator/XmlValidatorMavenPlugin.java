@@ -35,7 +35,7 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 
-@Mojo(name = "validate", defaultPhase = LifecyclePhase.PROCESS_SOURCES)
+@Mojo(name = "execute", defaultPhase = LifecyclePhase.PROCESS_SOURCES)
 public class XmlValidatorMavenPlugin extends AbstractMojo {
     //TODO JAVADOC
     static final String DOT_JSON = ".json";
@@ -45,15 +45,26 @@ public class XmlValidatorMavenPlugin extends AbstractMojo {
 
     @Parameter(defaultValue = "${project.build.directory}", property = "inputDirectory", required = true)
     private File inputDirectory;
+    @Parameter(defaultValue = "true", property = "useBasicRules")
+    private Boolean useBasicRules;
+    @Parameter(defaultValue = "false", property = "useCustomRules")
+    private Boolean useCustomRules;
+
     private DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
     private Gson gson;
 
     public void execute() throws MojoExecutionException {
         this.registerJsonsAndCreateGson();
         Set<File> allJsonFiles = new HashSet<>();
-        //TODO add option to find json files from building project
-        for (String filePath : this.findFilesInResourses(DOT_JSON)) {
-            allJsonFiles.add(this.parseFilesInResources(filePath));
+
+        if (this.useBasicRules != null && this.useBasicRules) {
+            for (String filePath : this.findFilesInResourses(DOT_JSON)) {
+                allJsonFiles.add(this.parseFilesInResources(filePath));
+            }
+        }
+
+        if (this.useCustomRules != null && this.useCustomRules) {
+            allJsonFiles.addAll(this.findAllFiles(this.inputDirectory, DOT_JSON));
         }
 
         Set<ValidationJson> allValidationJsons = new HashSet<>();
@@ -65,6 +76,7 @@ public class XmlValidatorMavenPlugin extends AbstractMojo {
             }
         }
 
+        //TODO change to be possible to choose between validating all xml files (aka target folder) or only for the project itself
         Set<File> allXmlFiles = this.findAllFiles(this.inputDirectory, DOT_XML);
         for (File file : allXmlFiles) {
             try {
