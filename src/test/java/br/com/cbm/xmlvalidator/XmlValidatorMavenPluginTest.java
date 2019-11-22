@@ -72,6 +72,7 @@ public class XmlValidatorMavenPluginTest {
             try {
                 this.xmlValidatorMavenPlugin.validate(validationJson, doc);
             } catch (XmlValidationException e) {
+                e.setValidationJsonName(validationJson.getName());
                 throw new MojoExecutionException(e.getMessage());
             }
         }

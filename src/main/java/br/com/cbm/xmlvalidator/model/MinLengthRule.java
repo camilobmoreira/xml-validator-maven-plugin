@@ -20,9 +20,9 @@ public class MinLengthRule implements Rule {
 
     @Override
     public boolean accepts(Object value) {
-        if (!(value instanceof Integer)) {
+        if (!(value instanceof String)) {
             return false;
         }
-        return this.value > (Integer) value;
+        return this.value <= ((String) value).length();
     }
 }

@@ -56,7 +56,6 @@ public class XmlValidatorMavenPlugin extends AbstractMojo {
     public void execute() throws MojoExecutionException {
         this.registerJsonsAndCreateGson();
         Set<File> allJsonFiles = new HashSet<>();
-
         if (this.useBasicRules != null && this.useBasicRules) {
             for (String filePath : this.findFilesInResourses(DOT_JSON)) {
                 allJsonFiles.add(this.parseFilesInResources(filePath));
@@ -166,11 +165,18 @@ public class XmlValidatorMavenPlugin extends AbstractMojo {
     }
 
     ValidationJson parseValidationJson(File file) throws FileNotFoundException {
-        ValidationJson validationJson = this.gson.fromJson(new FileReader(file), ValidationJson.class);
-        this.parseGenericRules(validationJson.getTags(), validationJson.getGenericRules());
-        this.parseGenericProperties(validationJson.getTags(), validationJson.getGenericProperties());
-        validationJson.setName(file.getName());
-        return validationJson;
+        ValidationJson json = this.gson.fromJson(new FileReader(file), ValidationJson.class);
+        this.addGenericRulesToGenericProperties(json.getGenericRules(), json.getGenericProperties());
+        this.parseGenericRules(json.getTags(), json.getGenericRules());
+        this.parseGenericProperties(json.getTags(), json.getGenericProperties());
+        json.setName(file.getName());
+        return json;
+    }
+
+    private void addGenericRulesToGenericProperties(Set<Rule> genericRules, Set<Property> genericProperties) {
+        for (Property property : genericProperties) {
+            property.getRules().addAll(genericRules);
+        }
     }
 
     private void parseGenericRules(Set<Tag> tags, Set<Rule> genericRules) {
