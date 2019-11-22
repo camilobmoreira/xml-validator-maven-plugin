@@ -22,11 +22,14 @@ public class InRule implements Rule{
 
     @Override
     public boolean accepts(Object value) {
+        if (this.value.contains(value)) {
+            return true;
+        }
         for (Object o : this.value) {
-            if (!o.equals(value) || (o instanceof String && value instanceof String && !((String) o).equalsIgnoreCase((String) value))) {
-                return false;
+            if (o.equals(value) || (o instanceof String && value instanceof String && ((String) o).equalsIgnoreCase((String) value))) {
+                return true;
             }
         }
-        return true;
+        return false;
     }
 }

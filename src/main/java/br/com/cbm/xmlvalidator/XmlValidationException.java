@@ -64,7 +64,22 @@ public class XmlValidationException extends Exception {
     }
 
     public String buildMessage() {
-        //TODO
-        return "ERROR";
+        StringBuilder message = new StringBuilder("\nError during validation of the file: ")
+                .append(this.getFileErrorName()).append(" ");
+
+        if (this.getProperty() != null) {
+            message.append("(property: ").append(this.getProperty().getName()).append(" inside ");
+        } else {
+            message.append("(");
+        }
+
+        message.append("tag: ").append(this.getTag().getName()).append(")")
+                .append(" due to the rule: ").append(this.getRule().getClass().getSimpleName()).append(".")
+                .append(". Accepted value(s): ").append(this.getRule().getValue())
+                .append(". Actual value: ").append(this.getValue()).append(".")
+                .append(" This rule/values can be found in the following validation file: ")
+                .append(this.getValidationJsonName()).append(".");
+
+        return message.toString();
     }
 }

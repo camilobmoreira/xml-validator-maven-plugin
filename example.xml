@@ -12,7 +12,7 @@
     </preConditions>
 
     <changeSet id="1" author="camilobmoreira">
-        <createTable tableName="person_131231231231231231212331">
+        <createTable tableName="person">
             <column name="id" type="int" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
@@ -25,7 +25,7 @@
     </changeSet>
 
     <changeSet id="2" author="camilobmoreira">
-        <addColumn tableName="person_131231231231231231212331">
+        <addColumn tableName="person">
             <column name="username" type="varchar(8)"/>
         </addColumn>
     </changeSet>
@@ -44,6 +44,12 @@
             <column name="pass" type="varchar(50)"/>
             <column name="status" type="char(2)"/>
         </createTable>
+    </changeSet>
+
+    <changeSet id="2" author="camilobmoreira">
+        <addColumn tableName="person">
+            <column name="email_1312312312312312312123312" type="varchar(8)"/>
+        </addColumn>
     </changeSet>
 
 </databaseChangeLog>

@@ -21,7 +21,7 @@ public class ContainsRule implements Rule {
     }
 
     @Override
-    public boolean accepts(Object value) {
+    public boolean accepts(Object value) {//fixme this is working just like InRule
         for (Object o : this.value) {
             if (o.equals(value) || (o instanceof String && value instanceof String && ((String) o).equalsIgnoreCase((String) value))) {
                 return true;
