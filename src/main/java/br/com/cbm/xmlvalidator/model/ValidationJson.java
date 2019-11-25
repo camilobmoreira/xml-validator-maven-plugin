@@ -1,8 +1,18 @@
 package br.com.cbm.xmlvalidator.model;
 
+
 import java.util.Set;
 
+
+/**
+ * Class that represents the a validation json that should be created inside the resources folder and it's gonna be
+ * used to validate the xml document
+ *
+ * @author camilobmoreira
+ * @since 1.0
+ */
 public class ValidationJson {
+
     private String name;
     private Set<Tag> tags;
     private Set<Rule> genericRules;

@@ -18,7 +18,7 @@ public class InterfaceAdapter implements JsonSerializer, JsonDeserializer {
         JsonObject jsonObject = jsonElement.getAsJsonObject();
         JsonPrimitive prim = (JsonPrimitive) jsonObject.get(CLASSNAME);
         String className = prim.getAsString();
-        Class klass = getObjectClass(className);
+        Class klass = this.getObjectClass(className);
         return jsonDeserializationContext.deserialize(jsonObject.get(DATA), klass);
     }
 

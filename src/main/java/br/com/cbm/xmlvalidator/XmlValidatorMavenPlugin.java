@@ -36,9 +36,15 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 
+/**
+ * The main class for the plugin, responsible for searching, reading, parsing and validating all the necessary files
+ *
+ * @author camilobmoreira
+ * @since 1.0
+ */
 @Mojo(name = "execute", defaultPhase = LifecyclePhase.PROCESS_SOURCES)
 public class XmlValidatorMavenPlugin extends AbstractMojo {
-    //TODO JAVADOC
+
     static final String DOT_JSON = ".json";
     static final String DOT_XML = ".xml";
     private static final String DOT_JAR = ".jar";
@@ -58,9 +64,23 @@ public class XmlValidatorMavenPlugin extends AbstractMojo {
 
     private DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
     private Gson gson;
+    private DocumentBuilder documentBuilder;
 
-    public void execute() throws MojoExecutionException {
+    /**
+     * Start any and every service or configuration required for the plugin to be run.
+     * Any special configuration that always need to be started should be put here.
+     */
+    void init() {
         this.registerJsonsAndCreateGson();
+    }
+
+    /**
+     * The main class for the plugin, responsible for searching, reading, parsing and validating all the necessary files
+     *
+     * @throws MojoExecutionException
+     */
+    public void execute() throws MojoExecutionException {
+        this.init();
         Set<File> allJsonFiles = new HashSet<>();
 
         if (BooleanUtils.isTrue(this.useBasicRules)) {
@@ -104,20 +124,12 @@ public class XmlValidatorMavenPlugin extends AbstractMojo {
         }
     }
 
-    private File findFileByName(File file, String fileName) {
-        if (file == null || file.listFiles() == null) {
-            return null;
-        }
-        for (File f : file.listFiles()) {
-            if (f.getName().equalsIgnoreCase(fileName)) {
-                return f;
-            } else if (f.isDirectory()) {
-                return this.findFileByName(f, fileName);
-            }
-        }
-        return null;
-    }
-
+    /**
+     * Parse files in resource of this project
+     *
+     * @param filePath the path of the file inside the resources folder
+     * @return the file itself
+     */
     private File parseFilesInResources(String filePath) {
         try {
             File file = File.createTempFile(filePath, null);
@@ -143,6 +155,12 @@ public class XmlValidatorMavenPlugin extends AbstractMojo {
         return null;
     }
 
+    /**
+     * Find all files inside the resource folder of a given extension/type
+     *
+     * @param fileExtension extension of the files to be searched for
+     * @return a {@link Set} with path of all the files found
+     */
     private Set<String> findFilesInResourses(String fileExtension) {
         PluginDescriptor pluginDescriptor = (PluginDescriptor) this.getPluginContext().get(PLUGIN_DESCRIPTOR);
         File file = new File(pluginDescriptor.getSource());
@@ -164,18 +182,29 @@ public class XmlValidatorMavenPlugin extends AbstractMojo {
         return filesPath;
     }
 
-    void registerJsonsAndCreateGson() {
+    /**
+     * Register and create an instance of the {@link Gson} used in this class with all the type adapters necessary
+     */
+    private void registerJsonsAndCreateGson() {
         GsonBuilder gsonBuilder = new GsonBuilder();
         gsonBuilder.registerTypeAdapter(Rule.class, new InterfaceAdapter());
         this.gson = gsonBuilder.create();
     }
 
-    Set<File> findAllFiles(File file, String fileExtension) {
+    /**
+     * Find all files of a given extension/type inside a folder and its children folders.
+     * Note that this is a recursive method.
+     *
+     * @param folder the folder where the search should start
+     * @param fileExtension the extension/type of the files to be searched
+     * @return a {@link Set} containing all the files found
+     */
+    Set<File> findAllFiles(File folder, String fileExtension) {
         Set<File> files = new HashSet<>();
-        if (file == null || file.listFiles() == null) {
+        if (folder == null || folder.listFiles() == null) {
             return files;
         }
-        for (File f : file.listFiles()) {
+        for (File f : folder.listFiles()) {
             if (f.isDirectory()) {
                 files.addAll(this.findAllFiles(f, fileExtension));
             } else if (f.getName().toLowerCase().endsWith(fileExtension)) {
@@ -185,11 +214,71 @@ public class XmlValidatorMavenPlugin extends AbstractMojo {
         return files;
     }
 
-    Document parseXml(File file) throws ParserConfigurationException, IOException, SAXException {
-        DocumentBuilder builder = this.documentBuilderFactory.newDocumentBuilder();
-        return builder.parse(file);
+    /**
+     * Find a {@link File} (file or folder) with an specific name
+     *
+     * @param folder folder where it should start looking for the file
+     * @param fileName name of the file (or folder) to be searched for
+     * @return the searched file or null if it doesn't find
+     */
+    private File findFileByName(File folder, String fileName) {
+        if (folder == null || folder.listFiles() == null) {
+            return null;
+        }
+        for (File f : folder.listFiles()) {
+            if (f.getName().equalsIgnoreCase(fileName)) {
+                return f;
+            } else if (f.isDirectory()) {
+                return this.findFileByName(f, fileName);
+            }
+        }
+        return null;
     }
 
+    /**
+     * Convert a xml file to a {@link Document}, so its content can be easily accessed
+     *
+     * @param file the file to be converted
+     * @return a {@link Document} converted
+     *
+     * @throws ParserConfigurationException by javax.xml.parsers.DocumentBuilderFactory#newDocumentBuilder()
+     * @throws IOException by javax.xml.parsers.DocumentBuilder#parse(java.io.File)
+     * @throws SAXException by javax.xml.parsers.DocumentBuilder#parse(java.io.File)
+     */
+    Document parseXml(File file) throws ParserConfigurationException, IOException, SAXException {
+        if (this.documentBuilder == null) {
+            this.documentBuilder = this.documentBuilderFactory.newDocumentBuilder();
+        }
+        return this.documentBuilder.parse(file);
+    }
+
+    /**
+     * Parse and convert a {@link File} to a {@link ValidationJson}, by:
+     * <ul>
+     *     <li>
+     *         Adds all generic rules (a.k.a. {@link GenericRule}) to all {@link Property} in
+     *         {@link ValidationJson#getGenericProperties()}(a.k.a. that were declared as a
+     *         {@link Property#GENERIC_PROPERTIES}).
+     *     </li>
+     *     <li>
+     *         Goes through every {@link Rule} of {@link Tag} and every {@link Property} looking for an instance of a
+     *         {@link GenericRule}. If it finds, it adds all {@link Rule} in {@link ValidationJson#getGenericRules()}
+     *         to said {@link Tag} or {@link Property}
+     *     </li>
+     *     <li>
+     *         Goes through every {@link Tag} looking for a {@link Property} which the {@link Property#getName()} is
+     *         {@link String#equalsIgnoreCase(String)} to {@link Property#GENERIC_PROPERTIES}. If it finds, it adds all
+     *         the {@link Property} in {@link ValidationJson#getGenericProperties()} to said {@link Tag}
+     *     </li>
+     *     <li>
+     *         Sets the name of the file to {@link ValidationJson#getName()}
+     *     </li>
+     * </ul>
+     *
+     * @param file file to be converted
+     * @return {@link ValidationJson} with all its content (rules and properties) already parsed
+     * @throws FileNotFoundException by java.io.FileReader#FileReader(java.io.File)
+     */
     ValidationJson parseValidationJson(File file) throws FileNotFoundException {
         ValidationJson json = this.gson.fromJson(new FileReader(file), ValidationJson.class);
         this.addGenericRulesToGenericProperties(json.getGenericRules(), json.getGenericProperties());
@@ -199,12 +288,28 @@ public class XmlValidatorMavenPlugin extends AbstractMojo {
         return json;
     }
 
+    /**
+     * Adds all generic rules (a.k.a. {@link GenericRule}) to all {@link Property} from
+     * {@link ValidationJson#getGenericProperties()}
+     * (a.k.a. that were declared as a {@link Property#GENERIC_PROPERTIES}).
+     *
+     * @param genericRules {@link Set} of {@link Rule} in {@link ValidationJson#getGenericRules()}
+     * @param genericProperties {@link Set} of {@link Property} in {@link ValidationJson#getGenericProperties()}
+     */
     private void addGenericRulesToGenericProperties(Set<Rule> genericRules, Set<Property> genericProperties) {
         for (Property property : genericProperties) {
             property.getRules().addAll(genericRules);
         }
     }
 
+    /**
+     * Goes through every {@link Rule} of {@link Tag} and every {@link Property} looking for an instance of a
+     * {@link GenericRule}. If it finds, it adds all {@link Rule} from {@link ValidationJson#getGenericRules()} to said
+     * {@link Tag} or {@link Property}
+     *
+     * @param tags tags to be searched for {@link GenericRule}
+     * @param genericRules generic rules from {@link ValidationJson#getGenericRules()}
+     */
     private void parseGenericRules(Set<Tag> tags, Set<Rule> genericRules) {
         for (Tag tag : tags) {
             this.checkRulesForGenericRule(tag.getRules(), genericRules);
@@ -214,6 +319,12 @@ public class XmlValidatorMavenPlugin extends AbstractMojo {
         }
     }
 
+    /**
+     * Check if any {@link Rule} is an instance of {@link GenericRule}, if it finds, cobine them.
+     *
+     * @param rules rules to be searched
+     * @param genericRules generic rules to be added to the (other) rules
+     */
     private void checkRulesForGenericRule(Set<Rule> rules, Set<Rule> genericRules) {
         for (Rule rule : rules) {
             if (rule instanceof GenericRule) {
@@ -223,6 +334,14 @@ public class XmlValidatorMavenPlugin extends AbstractMojo {
         }
     }
 
+    /**
+     * Goes through every {@link Tag} looking for a {@link Property} which the {@link Property#getName()} is
+     * {@link String#equalsIgnoreCase(String)} to {@link Property#GENERIC_PROPERTIES}. If it finds, it adds all the
+     * {@link Property} from {@link ValidationJson#getGenericProperties()} to said {@link Tag}
+     *
+     * @param tags
+     * @param genericProperties
+     */
     private void parseGenericProperties(Set<Tag> tags, Set<Property> genericProperties) {
         for (Tag tag : tags) {
             for (Property property : tag.getProperties()) {
@@ -234,6 +353,13 @@ public class XmlValidatorMavenPlugin extends AbstractMojo {
         }
     }
 
+    /**
+     * Validate a {@link Document} (a.k.a. the xml file) against the {@link ValidationJson}
+     *
+     * @param validationJson the json with the rules to use for validation
+     * @param xmlDocument the xml documento to be validated
+     * @throws XmlValidationException in case the validation fails
+     */
     void validate(ValidationJson validationJson, Document xmlDocument) throws XmlValidationException {
         for (Tag tag : validationJson.getTags()) {
             NodeList tagsToBeValidated = xmlDocument.getElementsByTagName(tag.getName());
@@ -249,6 +375,15 @@ public class XmlValidatorMavenPlugin extends AbstractMojo {
         }
     }
 
+    /**
+     * Check if the {@link NamedNodeMap} is of a tag that should be validated comparing its name to each
+     * {@link Tag#getName()}. If it should be validated, then check if its value is valid.
+     * It also checks each {@link Property} from {@link Tag#getProperties()} to see if they are valid.
+     *
+     * @param tag
+     * @param propertiesToBeValidated
+     * @throws XmlValidationException in case the validation fails
+     */
     private void validateProperties(Tag tag, NamedNodeMap propertiesToBeValidated) throws XmlValidationException {
         for (int j = 0; j < propertiesToBeValidated.getLength(); j++) {
             Node currentProperty = propertiesToBeValidated.item(j);
@@ -263,6 +398,14 @@ public class XmlValidatorMavenPlugin extends AbstractMojo {
         }
     }
 
+    /**
+     * Check if the {@link Node} is of a tag property that should be validated comparing its name to each
+     * {@link Property#getName()}. If it should be validated, then check if its value is valid.
+     *
+     * @param properties
+     * @param toBeValidated
+     * @throws XmlValidationException in case the validation fails
+     */
     private void validadeProperty(Set<Property> properties, Node toBeValidated) throws XmlValidationException {
         String propertyName = toBeValidated.getNodeName();
         String propertyValue = toBeValidated.getNodeValue();
@@ -278,6 +421,13 @@ public class XmlValidatorMavenPlugin extends AbstractMojo {
         }
     }
 
+    /**
+     * Check if every {@link Rule} to see if it {@link Rule#accepts(Object)} the value
+     *
+     * @param rules the rules used to validate
+     * @param value the value to be validated
+     * @throws XmlValidationException in case the validation fails
+     */
     private void validateRules(Set<Rule> rules, String value) throws XmlValidationException {
         for (Rule rule : rules) {
             if (!rule.accepts(value)) {

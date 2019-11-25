@@ -18,6 +18,12 @@ import java.util.HashSet;
 import java.util.Set;
 
 
+/**
+ * Test class for {@link XmlValidatorMavenPlugin}
+ *
+ * @author camilobmoreira
+ * @since 1.0
+ */
 public class XmlValidatorMavenPluginTest {
 
     private static final String LIQUIBASE_ORACLE_RULES_JSON = "liquibase-oracle-rules.json";
@@ -26,7 +32,7 @@ public class XmlValidatorMavenPluginTest {
 
     @Before
     public void setup() {
-        this.xmlValidatorMavenPlugin.registerJsonsAndCreateGson();
+        this.xmlValidatorMavenPlugin.init();
     }
 
     //TODO more test cases
@@ -75,7 +81,8 @@ public class XmlValidatorMavenPluginTest {
 
     private Set<ValidationJson> findAndAssertAllValidationJsons() {
         File basicRules = new File(BASIC_RULES_PATH);
-        Set<File> allJsonFiles = this.xmlValidatorMavenPlugin.findAllFiles(basicRules, XmlValidatorMavenPlugin.DOT_JSON);
+        Set<File> allJsonFiles =
+                this.xmlValidatorMavenPlugin.findAllFiles(basicRules, XmlValidatorMavenPlugin.DOT_JSON);
         Set<ValidationJson> allValidationJsons = new HashSet<>();
         try {
             for (File jsonFile : allJsonFiles) {

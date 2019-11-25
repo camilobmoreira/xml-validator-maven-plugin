@@ -6,6 +6,14 @@ import br.com.cbm.xmlvalidator.model.Rule;
 import br.com.cbm.xmlvalidator.model.Tag;
 
 
+/**
+ * Exception thrown when the validation of a xml file failed.
+ * It contains all the info about the failure, such as the value, property, tag and file that failed the validation,
+ * as the rule and the accepted values for that rule and where it was declared (a.k.a. the name of the validation json).
+ *
+ * @author camilobmoreira
+ * @since 1.0
+ */
 public class XmlValidationException extends Exception {
 
     private String fileErrorName;
@@ -63,6 +71,12 @@ public class XmlValidationException extends Exception {
         this.value = value;
     }
 
+    /**
+     * Builds the message for the excpetion, containing all the info necessary for finding where the error is in the xml
+     * file
+     *
+     * @return the error message for the exception
+     */
     public String buildMessage() {
         StringBuilder message = new StringBuilder("\nError during validation of the file: ")
                 .append(this.getFileErrorName()).append(" ");

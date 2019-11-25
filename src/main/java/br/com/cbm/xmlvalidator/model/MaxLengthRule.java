@@ -1,5 +1,12 @@
 package br.com.cbm.xmlvalidator.model;
 
+
+/**
+ * Rule that represents the maximum length of a field
+ *
+ * @author camilobmoreira
+ * @since 1.0
+ */
 public class MaxLengthRule implements Rule {
 
     private Integer value;
