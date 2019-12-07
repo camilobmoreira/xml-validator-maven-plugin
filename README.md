@@ -41,11 +41,17 @@ You can configure some parameters to be used by the plugin like this:
 ``` 
 
 The accepted parameters are:
-```
-inputDirectory: the directory to search for the xml files. Default: target folder.
-useBasicRules: if the basic rules should be used. Default: true.
-useCustomRules: if the plugin should look for rules files inside the resource folder of your project. Default: false.
-```
+
+* inputDirectory: the directory to search for the xml files. **DO NOT** use this and the **useResourcesDirectory**
+    parameter together. Default: resources folder.
+
+* useResourcesDirectory: if the plugin should look for xml files to be validated in the resources folder. Else, it's 
+    gonna use the target folder. Unless the **inputDirectory** is defined. Default: true
+
+* useBasicRules: if the rules defined in the [basic rules folder][1] should be used. Default: true.
+
+* useCustomRules: if the plugin should look for rules files inside the resource folder of your project. Default: false.
+
 
 Obs: you can find an example JSON file inside the [basic rules folder][1] 
 

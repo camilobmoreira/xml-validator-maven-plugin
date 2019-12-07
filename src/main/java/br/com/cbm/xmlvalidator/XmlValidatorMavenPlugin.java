@@ -41,10 +41,15 @@ public class XmlValidatorMavenPlugin extends AbstractMojo {
     static final String DOT_JSON = ".json";
     static final String DOT_XML = ".xml";
     private static final String DOT_JAR = ".jar";
+    private static final String RESOURCES = "resources";
     private static final String PLUGIN_DESCRIPTOR = "pluginDescriptor";
 
-    @Parameter(defaultValue = "${project.build.directory}", property = "inputDirectory", required = true)
+    @Parameter(defaultValue = "${project.build.directory}", property = "targetDirectory", readonly = true)
+    private File targetDirectory;
+    @Parameter(defaultValue = "${project.build.directory}", property = "inputDirectory")
     private File inputDirectory;
+    @Parameter(defaultValue = "true", property = "useResourcesDirectory")
+    private Boolean useResourcesDirectory;
     @Parameter(defaultValue = "true", property = "useBasicRules")
     private Boolean useBasicRules;
     @Parameter(defaultValue = "false", property = "useCustomRules")
@@ -75,8 +80,13 @@ public class XmlValidatorMavenPlugin extends AbstractMojo {
             }
         }
 
-        //TODO change to be possible to choose between validating all xml files (aka target folder) or only for the project itself
-        Set<File> allXmlFiles = this.findAllFiles(this.inputDirectory, DOT_XML);
+        Set<File> allXmlFiles = new HashSet<>();
+        if (this.useResourcesDirectory != null && this.useResourcesDirectory) {
+            File resourcesFolder = this.findFileByName(this.targetDirectory.getParentFile(), RESOURCES);
+            allXmlFiles.addAll(this.findAllFiles(resourcesFolder, DOT_XML));
+        } else {
+            allXmlFiles.addAll(this.findAllFiles(this.inputDirectory, DOT_XML));
+        }
         for (File file : allXmlFiles) {
             try {
                 Document doc = this.parseXml(file);
@@ -90,6 +100,20 @@ public class XmlValidatorMavenPlugin extends AbstractMojo {
                 throw new MojoExecutionException(e.buildMessage(), e);
             }
         }
+    }
+
+    private File findFileByName(File file, String fileName) {
+        if (file == null || file.listFiles() == null) {
+            return null;
+        }
+        for (File f : file.listFiles()) {
+            if (f.getName().equalsIgnoreCase(fileName)) {
+                return f;
+            } else if (f.isDirectory()) {
+                return this.findFileByName(f, fileName);
+            }
+        }
+        return null;
     }
 
     private File parseFilesInResources(String filePath) {
