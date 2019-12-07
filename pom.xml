@@ -11,9 +11,29 @@
     <packaging>maven-plugin</packaging>
 
     <name>XML Validator Maven Plugin</name>
+    <description>A Maven Plugin to validate xml files during build lifecycle</description>
+    <url>https://camilobmoreira.github.io/xml-validator-maven-plugin/</url>
 
-    <!-- FIXME change it to the project's website -->
-    <url>http://www.example.com</url>
+    <licenses>
+        <license>
+            <name>The Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <name>Camilo Bustamante Moreira</name>
+            <email>bustamantecamilo23@gmail.com</email>
+            <url>https://github.com/camilobmoreira/</url>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:git://github.com/camilobmoreira/xml-validator-maven-plugin.git</connection>
+        <developerConnection>scm:git:ssh://github.com:camilobmoreira/xml-validator-maven-plugin.git</developerConnection>
+        <url>https://github.com/camilobmoreira/xml-validator-maven-plugin/tree/master</url>
+    </scm>
 
     <prerequisites>
         <maven>${maven.version}</maven>
@@ -78,6 +98,11 @@
             <groupId>com.googlecode.json-simple</groupId>
             <artifactId>json-simple</artifactId>
             <version>1.1.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.9</version>
         </dependency>
     </dependencies>
 
