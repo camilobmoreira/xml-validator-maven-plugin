@@ -21,7 +21,7 @@ You can attach the plugin to the build lifecycle like this:
 ```
 <executions>
   <execution>
-    <phase>compile</phase>
+    <phase>test</phase>
     <goals>
       <goal>execute</goal>
     </goals>
@@ -42,8 +42,8 @@ You can configure some parameters to be used by the plugin like this:
 
 The accepted parameters are:
 
-* inputDirectory: the directory to search for the xml files. **DO NOT** use this and the **useResourcesDirectory**
-    parameter together. Default: resources folder.
+* inputDirectory: the directory to search for the xml files. Default: resources folder. 
+    * **DO NOT** use this and the **useResourcesDirectory** parameter together.
 
 * useResourcesDirectory: if the plugin should look for xml files to be validated in the resources folder. Else, it's 
     gonna use the target folder. Unless the **inputDirectory** is defined. Default: true

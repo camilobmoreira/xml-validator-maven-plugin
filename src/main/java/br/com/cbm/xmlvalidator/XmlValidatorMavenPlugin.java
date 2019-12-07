@@ -6,6 +6,7 @@ import br.com.cbm.xmlvalidator.model.*;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.descriptor.PluginDescriptor;
@@ -61,13 +62,14 @@ public class XmlValidatorMavenPlugin extends AbstractMojo {
     public void execute() throws MojoExecutionException {
         this.registerJsonsAndCreateGson();
         Set<File> allJsonFiles = new HashSet<>();
-        if (this.useBasicRules != null && this.useBasicRules) {
+
+        if (BooleanUtils.isTrue(this.useBasicRules)) {
             for (String filePath : this.findFilesInResourses(DOT_JSON)) {
                 allJsonFiles.add(this.parseFilesInResources(filePath));
             }
         }
 
-        if (this.useCustomRules != null && this.useCustomRules) {
+        if (BooleanUtils.isTrue(this.useCustomRules)) {
             allJsonFiles.addAll(this.findAllFiles(this.inputDirectory, DOT_JSON));
         }
 
@@ -81,7 +83,7 @@ public class XmlValidatorMavenPlugin extends AbstractMojo {
         }
 
         Set<File> allXmlFiles = new HashSet<>();
-        if (this.useResourcesDirectory != null && this.useResourcesDirectory) {
+        if (BooleanUtils.isTrue(this.useResourcesDirectory)) {
             File resourcesFolder = this.findFileByName(this.targetDirectory.getParentFile(), RESOURCES);
             allXmlFiles.addAll(this.findAllFiles(resourcesFolder, DOT_XML));
         } else {
