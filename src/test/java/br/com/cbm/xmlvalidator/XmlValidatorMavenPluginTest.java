@@ -1,61 +1,79 @@
 package br.com.cbm.xmlvalidator;
 
 
+import br.com.cbm.xmlvalidator.model.MaxLengthRule;
+import br.com.cbm.xmlvalidator.model.ValidationJson;
+import org.apache.maven.plugin.MojoExecutionException;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.maven.plugin.MojoExecutionException;
-import org.junit.Assert;
-import org.junit.Test;
-import org.w3c.dom.Document;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
-
-import javax.xml.parsers.ParserConfigurationException;
-
-import br.com.cbm.xmlvalidator.model.Property;
-import br.com.cbm.xmlvalidator.model.Rule;
-import br.com.cbm.xmlvalidator.model.Tag;
-import br.com.cbm.xmlvalidator.model.ValidationJson;
-
 
 public class XmlValidatorMavenPluginTest {
 
-    private static final String EXAMPLE_XML_FILE_NAME = "example.xml";
+    private static final String LIQUIBASE_ORACLE_RULES_JSON = "liquibase-oracle-rules.json";
     private static final String BASIC_RULES_PATH = "./src/main/resources/basic-rules";
     private XmlValidatorMavenPlugin xmlValidatorMavenPlugin = new XmlValidatorMavenPlugin();
+
+    @Before
+    public void setup() {
+        this.xmlValidatorMavenPlugin.registerJsonsAndCreateGson();
+    }
 
     //TODO more test cases
     @Test(expected = MojoExecutionException.class)
     public void basicTest() throws MojoExecutionException {
-        this.xmlValidatorMavenPlugin.registerJsonsAndCreateGson();
+        Set<File> allXmlFiles = this.findAndAssertAllFiles();
+        Set<ValidationJson> allValidationJsons = this.findAndAssertAllValidationJsons();
 
-        File file = new File("./");
-        Set<File> allXmlFiles = this.xmlValidatorMavenPlugin.findAllFiles(file, XmlValidatorMavenPlugin.DOT_XML);
-        Assert.assertFalse(allXmlFiles.isEmpty());
-
-        File xmlFile = null;
-        for (File currentFile : allXmlFiles) {
-            if (currentFile.getName().toLowerCase().equals(EXAMPLE_XML_FILE_NAME)) {
-                xmlFile = currentFile;
+        for (File file : allXmlFiles) {
+            try {
+                this.validateXmlFile(file, allValidationJsons);
+            } catch (XmlValidationException e) {
+                this.assertAndThrowException(e, "basicTest.xml", "column", "name", "email_1312312312312312312123312");
+                return;
             }
         }
-        Assert.assertNotNull(xmlFile);
-        Assert.assertEquals(EXAMPLE_XML_FILE_NAME, xmlFile.getName());
+        Assert.fail();
+    }
 
-        Document doc = null;
-        try {
-            doc = this.xmlValidatorMavenPlugin.parseXml(xmlFile);
-        } catch (ParserConfigurationException | IOException | SAXException e) {
-            e.printStackTrace();
+
+
+    // ******************** HELPER METHODS ********************
+    private void assertAndThrowException(XmlValidationException exception, String xmlName, String tagName, String propertyName, String value) throws MojoExecutionException {
+        Class<MaxLengthRule> ruleClass = MaxLengthRule.class;
+        Assert.assertEquals(LIQUIBASE_ORACLE_RULES_JSON, exception.getValidationJsonName());
+        Assert.assertEquals(tagName, exception.getTag().getName());
+        Assert.assertEquals(propertyName, exception.getProperty().getName());
+        Assert.assertEquals(value, exception.getValue());
+        Assert.assertEquals(ruleClass, exception.getRule().getClass());
+        Assert.assertEquals(xmlName, exception.getFileErrorName());
+        throw new MojoExecutionException(exception.getMessage());
+    }
+
+    private void validateXmlFile(File file, Set<ValidationJson> allValidationJsons) throws XmlValidationException {
+        for (ValidationJson validationJson : allValidationJsons) {
+            try {
+                Document doc = this.convertAndAssertDocument(file);
+                this.xmlValidatorMavenPlugin.validate(validationJson, doc);
+            } catch (XmlValidationException e) {
+                e.setValidationJsonName(validationJson.getName());
+                e.setFileErrorName(file.getName());
+                throw e;
+            }
         }
-        Assert.assertNotNull(doc);
+    }
 
+    private Set<ValidationJson> findAndAssertAllValidationJsons() {
         File basicRules = new File(BASIC_RULES_PATH);
         Set<File> allJsonFiles = this.xmlValidatorMavenPlugin.findAllFiles(basicRules, XmlValidatorMavenPlugin.DOT_JSON);
         Set<ValidationJson> allValidationJsons = new HashSet<>();
@@ -67,16 +85,37 @@ public class XmlValidatorMavenPluginTest {
             e.printStackTrace();
         }
         Assert.assertFalse(allValidationJsons.isEmpty());
+        return allValidationJsons;
+    }
 
-        for (ValidationJson validationJson : allValidationJsons) {
-            try {
-                this.xmlValidatorMavenPlugin.validate(validationJson, doc);
-            } catch (XmlValidationException e) {
-                e.setValidationJsonName(validationJson.getName());
-                throw new MojoExecutionException(e.getMessage());
+    private Document convertAndAssertDocument(File xmlFile) {
+        Document doc = null;
+        try {
+            doc = this.xmlValidatorMavenPlugin.parseXml(xmlFile);
+        } catch (ParserConfigurationException | IOException | SAXException e) {
+            e.printStackTrace();
+        }
+        Assert.assertNotNull(doc);
+        return doc;
+    }
+
+    private File findAndAssertFileByName(Set<File> allXmlFiles, String xmlName) {
+        File xmlFile = null;
+        for (File currentFile : allXmlFiles) {
+            if (currentFile.getName().equalsIgnoreCase(xmlName)) {
+                xmlFile = currentFile;
             }
         }
-        Assert.fail();
+        Assert.assertNotNull(xmlFile);
+        Assert.assertEquals(xmlName, xmlFile.getName());
+        return xmlFile;
+    }
+
+    private Set<File> findAndAssertAllFiles() {
+        File file = new File("./");
+        Set<File> allXmlFiles = this.xmlValidatorMavenPlugin.findAllFiles(file, XmlValidatorMavenPlugin.DOT_XML);
+        Assert.assertFalse(allXmlFiles.isEmpty());
+        return allXmlFiles;
     }
 }
 
