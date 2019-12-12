@@ -1,8 +1,8 @@
-package br.com.cbm.xmlvalidator;
+package io.github.camilobmoreira.xmlvalidator;
 
 
-import br.com.cbm.xmlvalidator.model.MaxLengthRule;
-import br.com.cbm.xmlvalidator.model.ValidationJson;
+import io.github.camilobmoreira.xmlvalidator.model.MaxLengthRule;
+import io.github.camilobmoreira.xmlvalidator.model.ValidationJson;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.junit.Assert;
 import org.junit.Before;

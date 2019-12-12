@@ -1,4 +1,4 @@
-package br.com.cbm.xmlvalidator.model;
+package io.github.camilobmoreira.xmlvalidator.model;
 
 
 /**

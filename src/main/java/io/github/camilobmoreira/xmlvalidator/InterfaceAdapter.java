@@ -1,4 +1,4 @@
-package br.com.cbm.xmlvalidator;
+package io.github.camilobmoreira.xmlvalidator;
 
 import com.google.gson.*;
 

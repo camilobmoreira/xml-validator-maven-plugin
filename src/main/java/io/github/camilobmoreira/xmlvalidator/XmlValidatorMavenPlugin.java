@@ -1,10 +1,15 @@
-package br.com.cbm.xmlvalidator;
+package io.github.camilobmoreira.xmlvalidator;
 
 
-import br.com.cbm.xmlvalidator.model.*;
+import io.github.camilobmoreira.xmlvalidator.model.*;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import io.github.camilobmoreira.xmlvalidator.model.GenericRule;
+import io.github.camilobmoreira.xmlvalidator.model.Property;
+import io.github.camilobmoreira.xmlvalidator.model.Rule;
+import io.github.camilobmoreira.xmlvalidator.model.Tag;
+import io.github.camilobmoreira.xmlvalidator.model.ValidationJson;
 
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.maven.plugin.AbstractMojo;

@@ -1,9 +1,9 @@
-package br.com.cbm.xmlvalidator;
+package io.github.camilobmoreira.xmlvalidator;
 
 
-import br.com.cbm.xmlvalidator.model.Property;
-import br.com.cbm.xmlvalidator.model.Rule;
-import br.com.cbm.xmlvalidator.model.Tag;
+import io.github.camilobmoreira.xmlvalidator.model.Property;
+import io.github.camilobmoreira.xmlvalidator.model.Rule;
+import io.github.camilobmoreira.xmlvalidator.model.Tag;
 
 
 /**
