@@ -1,6 +1,7 @@
 package io.github.camilobmoreira.xmlvalidator;
 
 
+import com.google.inject.internal.util.Lists;
 import io.github.camilobmoreira.xmlvalidator.model.MaxLengthRule;
 import io.github.camilobmoreira.xmlvalidator.model.ValidationJson;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -27,7 +28,9 @@ import java.util.Set;
 public class XmlValidatorMavenPluginTest {
 
     private static final String LIQUIBASE_ORACLE_RULES_JSON = "liquibase-oracle-rules.json";
+    private static final String BASIC_TEST_XML = "basicTest.xml";
     private static final String BASIC_RULES_PATH = "./src/main/resources/basic-rules";
+    private static final String TEST_DIRECTORY_PATH = "./src/test/";
     private XmlValidatorMavenPlugin xmlValidatorMavenPlugin = new XmlValidatorMavenPlugin();
 
     @Before
@@ -50,6 +53,24 @@ public class XmlValidatorMavenPluginTest {
             }
         }
         Assert.fail();
+    }
+
+    @Test
+    public void findFileByNameTest() {
+        File currentDirectory = new File(TEST_DIRECTORY_PATH);
+
+        File testResources =
+                this.xmlValidatorMavenPlugin.findFileByName(currentDirectory, XmlValidatorMavenPlugin.RESOURCES);
+        Assert.assertNotNull(testResources);
+        Assert.assertTrue(testResources.isDirectory());
+        Assert.assertFalse(Lists.newArrayList(testResources.listFiles()).isEmpty());
+        Assert.assertEquals("./src/test/resources", testResources.getPath());
+
+        File basicTestXml =
+                this.xmlValidatorMavenPlugin.findFileByName(currentDirectory, BASIC_TEST_XML);
+        Assert.assertNotNull(basicTestXml);
+        Assert.assertFalse(basicTestXml.isDirectory());
+        Assert.assertEquals("./src/test/resources/xml-examples/basicTest.xml", basicTestXml.getPath());
     }
 
 

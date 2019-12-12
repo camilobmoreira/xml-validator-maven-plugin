@@ -1,8 +1,6 @@
 package io.github.camilobmoreira.xmlvalidator;
 
 
-import io.github.camilobmoreira.xmlvalidator.model.*;
-
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import io.github.camilobmoreira.xmlvalidator.model.GenericRule;
@@ -52,8 +50,9 @@ public class XmlValidatorMavenPlugin extends AbstractMojo {
 
     static final String DOT_JSON = ".json";
     static final String DOT_XML = ".xml";
+    static final String RESOURCES = "resources";
     private static final String DOT_JAR = ".jar";
-    private static final String RESOURCES = "resources";
+    private static final String CURRENT_DIRECTORY_PATH = "./";
     private static final String PLUGIN_DESCRIPTOR = "pluginDescriptor";
 
     @Parameter(defaultValue = "${project.build.directory}", property = "targetDirectory", readonly = true)
@@ -86,6 +85,7 @@ public class XmlValidatorMavenPlugin extends AbstractMojo {
      */
     public void execute() throws MojoExecutionException {
         this.init();
+
         Set<File> allJsonFiles = new HashSet<>();
 
         if (BooleanUtils.isTrue(this.useBasicRules)) {
@@ -112,7 +112,12 @@ public class XmlValidatorMavenPlugin extends AbstractMojo {
             File resourcesFolder = this.findFileByName(this.targetDirectory.getParentFile(), RESOURCES);
             allXmlFiles.addAll(this.findAllFiles(resourcesFolder, DOT_XML));
         } else {
-            allXmlFiles.addAll(this.findAllFiles(this.inputDirectory, DOT_XML));
+            if (this.inputDirectory.listFiles() != null) {
+                allXmlFiles.addAll(this.findAllFiles(this.inputDirectory, DOT_XML));
+            } else {
+                this.inputDirectory = new File(CURRENT_DIRECTORY_PATH + this.inputDirectory.getAbsolutePath());
+                allXmlFiles.addAll(this.findAllFiles(this.inputDirectory, DOT_XML));
+            }
         }
         for (File file : allXmlFiles) {
             try {
@@ -226,7 +231,7 @@ public class XmlValidatorMavenPlugin extends AbstractMojo {
      * @param fileName name of the file (or folder) to be searched for
      * @return the searched file or null if it doesn't find
      */
-    private File findFileByName(File folder, String fileName) {
+    File findFileByName(File folder, String fileName) {
         if (folder == null || folder.listFiles() == null) {
             return null;
         }
@@ -234,7 +239,10 @@ public class XmlValidatorMavenPlugin extends AbstractMojo {
             if (f.getName().equalsIgnoreCase(fileName)) {
                 return f;
             } else if (f.isDirectory()) {
-                return this.findFileByName(f, fileName);
+                File file = this.findFileByName(f, fileName);
+                if (file != null) {
+                    return file;
+                }
             }
         }
         return null;
